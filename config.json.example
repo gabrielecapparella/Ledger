@@ -1,0 +1,6 @@
+{
+		"user": "anatra",
+		"password": "quack",
+		"autocommit": true,
+		"database": "ledger"
+}

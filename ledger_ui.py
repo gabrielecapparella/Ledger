@@ -3,6 +3,7 @@
 from flask import Flask, render_template, request
 import ledger_db
 import json
+import sys
 
 
 master = Flask(__name__)
@@ -11,10 +12,13 @@ master = Flask(__name__)
 def index():
 	return render_template('index.html')
 
-@master.route('/getYear', methods=['POST'])
-def get_year():
-	year = request.get_json(force=True).get('year')
-	return json.dumps(master.db.get_year_cats(year))
+@master.route('/upload', methods = ['POST'])
+def upload_file():
+	f = request.files['file']
+	dest = './records/'+f.filename
+	f.save(dest)
+	master.db.insert_from_file(dest)
+	return 'ok'
 
 @master.route('/getCategories')
 def get_categories():
@@ -27,20 +31,20 @@ def get_categories():
 @master.route('/delCategory', methods=['POST'])
 def del_category():
 	data = request.get_json(force=True)
-	master.db.delete_category(data.get('toDel'))
+	master.db.delete_category(data.get('id'))
 	return 'ok'
 
 @master.route('/createCategory', methods=['POST'])
 def create_category():
 	data = request.get_json(force=True)
 	master.db.create_category(data.get('name'))
-	return 'ok'
+	return get_categories()
 
 @master.route('/renameCategory', methods=['POST'])
 def rename_category():
 	data = request.get_json(force=True)
 	master.db.rename_category(data.get('id'), data.get('name'))
-	return 'ok'
+	return get_categories()
 
 @master.route('/getPlaces')
 def get_places():
@@ -48,13 +52,12 @@ def get_places():
 	p_dict = {}
 	for place in places:
 		p_dict[place[0]] = place[1:]
-
 	return json.dumps(p_dict)
 
 @master.route('/delPlace', methods=['POST'])
 def del_place():
 	data = request.get_json(force=True)
-	master.db.delete_place(data.get('toDel'))
+	master.db.delete_place(data.get('id'))
 	return 'ok'
 
 @master.route('/createPlace', methods=['POST'])
@@ -87,8 +90,13 @@ def get_records():
 			record[6],
 			record[7]
 		]
-
 	return json.dumps(r_dict)
+
+@master.route('/delRec', methods=['POST'])
+def del_rec():
+	data = request.get_json(force=True)
+	master.db.delete_record(data.get('id'))
+	return 'ok'
 
 @master.route('/createRecord', methods=['POST'])
 def create_record():
@@ -119,21 +127,15 @@ def edit_record():
 	master.db.edit_record(data.get('id'), param)
 	return 'ok'
 
-@master.route('/delRec', methods=['POST'])
-def del_rec():
-	data = request.get_json(force=True)
-	master.db.delete_record(data.get('toDel'))
-	return 'ok'
+@master.route('/getYear', methods=['POST'])
+def get_year():
+	year = request.get_json(force=True).get('year')
+	return json.dumps(master.db.get_year_cats(year))
 
-@master.route('/upload', methods = ['POST'])
-def upload_file():
-	print(request.files)
-	f = request.files['file']
-	dest = './records/'+f.filename
-	f.save(dest)
-	master.db.insert_from_file(dest)
-	return 'ok'
 
 if __name__ == '__main__':
-	master.db = ledger_db.Ledger()
+	print(sys.argv)
+	if len(sys.argv)==2 and sys.argv[1]=="test": test = True
+	else: test= False 
+	master.db = ledger_db.Ledger(test)
 	master.run('0.0.0.0', 4242)

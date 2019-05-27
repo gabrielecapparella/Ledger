@@ -4,12 +4,13 @@ import re
 import mysql.connector
 import mysql.connector.pooling
 import datetime
+import json
 
 class Ledger:
-
-	def __init__(self):
+	def __init__(self, test=False):
 		with open('config.json', 'r') as cfg_file:
 				self.cfg = json.loads(cfg_file.read())
+		if test: self.cfg["database"] = "ledger_test"
 		self.pool = mysql.connector.pooling.MySQLConnectionPool(
 			pool_name = 'ledger_pool',
 			pool_size = 5,
@@ -44,22 +45,16 @@ class Ledger:
 
 		return rows
 
-	def read_xls(self, file):
-		with open(file, 'r') as f:
-			text = f.read()
-
-		rows = re.findall('<tr>'+
-			'<td border="1">\d{2}/\d{2}/\d{4}</td>'+
-			'<td border="1">(\d{2}/\d{2}/\d{4})</td>'+
-			'<td border="1">(.*?)</td>'+
-			'<td border="1">(.*?)</td>'+
-			'<td class="excelCurrency" border="1">&euro; (.*?)</td>'+
-			'</tr>', text)
-		return rows # data, tipo, descr, cifra
-
 	def insert_from_file(self, file):
 		query = 'INSERT IGNORE INTO records (date,type,descr,amount,notes,id_category,id_place) VALUES (%s,%s,%s,%s,%s,%s,%s)'
-		records = self.read_xls(file)
+		with open(file, 'r') as f:
+			records = re.findall(('<tr>'
+				'<td border="1">\d{2}/\d{2}/\d{4}</td>'
+				'<td border="1">(\d{2}/\d{2}/\d{4})</td>'
+				'<td border="1">(.*?)</td>'
+				'<td border="1">(.*?)</td>'
+				'<td class="excelCurrency" border="1">&euro; (.*?)</td>'
+				'</tr>'), f.read()) # date, type, descr, amount
 		matched = self.match_records(records)
 		self.query(query, matched)
 
@@ -74,7 +69,13 @@ class Ledger:
 			matched += [record]
 		return matched
 
-	def get_cat_by_name(self, name):
+	def format_record(self, record):
+		date = self.str2date(record[0])
+		amount = float(record[3].replace('.', '').replace(',', '.'))
+		descr = record[2].lower()
+		return (date, record[1], descr, amount, None, None, None)
+
+	def get_cat_id_by_name(self, name):
 		query = "SELECT ID FROM categories WHERE name=%s"
 		r = self.select(query, (name,))
 		return r[0][0]
@@ -98,6 +99,19 @@ class Ledger:
 
 	def rename_category(self, id_cat, new_name):
 		self.query("UPDATE categories SET name=%s WHERE ID=%s", (new_name, id_cat))
+
+	def edit_place(self, id_place, new_data):
+		params = new_data+(id_place,)
+		self.query("UPDATE places SET name=%s, pattern=%s, id_category=%s WHERE ID=%s", params)
+		recs = self.select("SELECT * FROM records WHERE id_place=%s OR id_place IS NULL", (id_place,))
+		for rec in recs:
+			if re.search(new_data[1], rec[3]):
+				self.edit_rec_place(rec[0], id_place)
+				#if rec[6]==None:
+				self.edit_rec_cat(rec[0], new_data[2])
+			elif rec[7]!=None:
+				self.edit_rec_place(rec[0], None)
+				self.edit_rec_cat(rec[0], None)
 
 	def get_places(self):
 		return self.select("SELECT * FROM places")
@@ -123,19 +137,6 @@ class Ledger:
 	def edit_rec_cat(self, r_id, cat):
 		self.query("UPDATE records SET id_category=%s WHERE ID=%s", (cat, r_id))
 
-	def edit_place(self, id_place, new_data):
-		params = new_data+(id_place,)
-		self.query("UPDATE places SET name=%s, pattern=%s, id_category=%s WHERE ID=%s", params)
-		recs = self.select("SELECT * FROM records WHERE id_place=%s OR id_place IS NULL", (id_place,))
-		for rec in recs:
-			if re.search(new_data[1], rec[3]):
-				self.edit_rec_place(rec[0], id_place)
-				#if rec[6]==None:
-				self.edit_rec_cat(rec[0], new_data[2])
-			elif rec[7]!=None:
-				self.edit_rec_place(rec[0], None)
-				self.edit_rec_cat(rec[0], None)
-
 	def get_records(self, year, month):
 		return self.select("SELECT * FROM records WHERE YEAR(date)=%s AND MONTH(date)=%s", (year, month))
 
@@ -154,40 +155,42 @@ class Ledger:
 	def get_cat_sum(self, id_cat, year):
 		now = datetime.datetime.now()
 		query = "SELECT sum(amount) FROM records WHERE YEAR(date)=%s AND MONTH(date)=%s AND id_category=%s"
-		v = [0.0]*14
-		v[0] = id_cat
-		avg, months = 0.0, 12
-		if str(now.year)==year: months = now.month
-		for m in range(1,13):
-			s = self.select(query, (year, m, id_cat))[0][0]
+		v = [0.0]*13 # [jan_sum, feb_sum, ..., avg]
+		for m in range(0,12):
+			s = self.select(query, (year, m+1, id_cat))[0][0]
 			if not s: s = 0.0
 			v[m] = float(s)
-			avg += float(s)
-		v[13]= avg//months
+			v[12] += float(s)
+		if str(now.year)==year:	v[12] //= now.month
+		else: v[12] //= 12
 		return v
 
 	def get_year_cats(self, year):
 		y = []
+		tots = []
 		for cat in self.get_categories():
-			y.append(self.get_cat_sum(cat[0], year))
-		vc = self.vec_sum(y)
-		vc[0] = -1
-		y.append(vc)
-
+			cat_report = self.get_cat_sum(cat[0], year)
+			y.append({
+				"cat_id": cat[0],
+				"cat_name": cat[1],
+				"report": cat_report
+				})
+			tots.append(cat_report)
+		y.append({
+			"cat_id": -1,
+			"cat_name": "Tot",
+			"report": self.vec_sum(tots)
+			})
 		return y
 
+	# in: a list of lists
+	# out: a list where the i element is the sum of the input lists' i elements
 	def vec_sum(self, lists):
 		return [round(sum(z),1) for z in zip(*lists)]
 
 	def str2date(self, date_str):
 		datetime_obj = datetime.datetime.strptime(date_str, '%d/%m/%Y')
 		return datetime_obj.date()
-
-	def format_record(self, record):
-		date = self.str2date(record[0])
-		amount = float(record[3].replace('.', '').replace(',', '.'))
-		descr = record[2].lower()
-		return (date, record[1], descr, amount, None, None, None)
 
 	def setup(self):
 		places = (
@@ -229,7 +232,7 @@ class Ledger:
 		cat_d = [('Alimentari',), ('Benzina',), ('Bollette',), ('Lavori',), ('Salute',), ('Casa',)]
 		self.query(cat_q, cat_d)
 
-		c = self.get_cat_by_name
+		c = self.get_cat_id_by_name
 
 		places_q = 'INSERT INTO places (name, pattern, id_category) VALUES (%s, %s, %s)'
 

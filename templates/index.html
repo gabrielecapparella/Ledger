@@ -11,29 +11,29 @@
 		<center><h1>Ledger</h1></center>	
 
 		<section id="history">
-			<div class="sec-title">Storico</div>
+			<div class="sec-title">History</div>
 			<div class="horizontal">
-				<div>Anno:</div>
+				<div>Year:</div>
 				<div><input type="number" id="selected-year"/></div>
 				<div><button id="history-ok" type="button">Ok</button></div>
 			</div>
 			<div>
 				<table id="table-history" class="bordered">
 					<thead>
-						<th>Categoria</th>
-						<th>Gen</th>
+						<th>Category</th>
+						<th>Jan</th>
 						<th>Feb</th>
 						<th>Mar</th>
 						<th>Apr</th>
-						<th>Mag</th>
-						<th>Giu</th>
-						<th>Lug</th>
+						<th>May</th>
+						<th>Jun</th>
+						<th>Jul</th>
 						<th>Ago</th>
-						<th>Set</th>
-						<th>Ott</th>
+						<th>Sep</th>
+						<th>Oct</th>
 						<th>Nov</th>
-						<th>Dic</th>
-						<th>Media</th>
+						<th>Dec</th>
+						<th>Average</th>
 					</thead>
 					<tbody>
 
@@ -42,24 +42,24 @@
 			</div>
 		</section>
 		<section id="categories">
-			<div class="sec-title">Categorie</div>
+			<div class="sec-title">Categories</div>
 			<div class="horizontal">
 				<div><select id="sel-cat"></select></div>
-				<div><button id="cat-del" type="button">Elimina</button></div>
-				<div><input type="text" id="cat-new-name" value="Nome"/></div>
-				<div><button id="cat-create" type="button">Crea</button></div>
-				<div><button id="cat-rename" type="button">Rinomina</button></div>
+				<div><button id="cat-del" type="button">Delete</button></div>
+				<div><input type="text" id="cat-new-name" value="Name"/></div>
+				<div><button id="cat-create" type="button">Create</button></div>
+				<div><button id="cat-rename" type="button">Rename</button></div>
 			</div>
 		</section>
 		<section id="places">
-			<div class="sec-title">Luoghi</div>
+			<div class="sec-title">Places</div>
 			<div class="horizontal">
 				<div class="vertical">
 					<div class="table-wrapper">
 						<table id="table-places" class="bordered">
 							<thead>
-								<th>Nome</th>
-								<th>Categoria</th>
+								<th>Name</th>
+								<th>Category</th>
 								<th>Pattern</th>
 							</thead>
 							<tbody>
@@ -67,33 +67,33 @@
 						</table>
 					</div>
 					<div>	
-						<button id="places-del" type="button" disabled>Elimina</button>
-						<button id="places-clear" type="button" disabled>Deseleziona</button>
+						<button id="places-del" type="button" disabled>Delete</button>
+						<button id="places-clear" type="button" disabled>Deselect</button>
 					</div>	
 				</div>	
 				<div id="places-sidebar" class="vertical bordered">
 					<div>
-						<b><label for="new-place-name">Nome:</label></b>
+						<b><label for="new-place-name">Name:</label></b>
 						<input type="text" id="new-place-name"/>
 					</div>
 					<div>
-						<b><label for="set-place-cat">Categoria:</label></b>
+						<b><label for="set-place-cat">Category:</label></b>
 						<select id="set-place-cat"></select>
 					</div>
 					<div>
 						<b><label for="new-place-pattern">Pattern:</label></b>
 						<input type="text" id="new-place-pattern"/>
 					</div>
-					<div><button id="new-place" type="button">Crea</button></div>			
+					<div><button id="new-place" type="button">Create</button></div>			
 				</div>
 			</div>
 		</section>
 		<section id="records">
-			<div class="sec-title">Movimenti</div>
+			<div class="sec-title">Records</div>
 			<div class="horizontal">
 				<div class="vertical">
 					<div class="horizontal">
-						<div>Mese:</div>
+						<div>Month:</div>
 						<div><input id="rec-period" type="month"/></div>
 						<div><button id="rec-period-ok" type="button">Ok</button></div>
 					</div>
@@ -101,11 +101,11 @@
 						<table id="table-records" class="bordered">
 							<thead>
 								<tr>
-									<th>Data</th>
-									<th>Tipo</th>
-									<th>Luogo</th>
-									<th>Categoria</th>
-									<th>Importo</th>
+									<th>Date</th>
+									<th>Type</th>
+									<th>Place</th>
+									<th>Category</th>
+									<th>Amount</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -113,36 +113,36 @@
 						</table>
 					</div>
 					<div>
-						<button id="rec-del" type="button" disabled>Elimina</button>
-						<button id="rec-clear" type="button" disabled>Deseleziona</button>
+						<button id="rec-del" type="button" disabled>Delete</button>
+						<button id="rec-clear" type="button" disabled>Deselect</button>
 					</div>				
 				</div>
 				<div id="rec-sidebar" class="vertical">
 					<div class="vertical bordered">
 						<div>
-							<b><label for="rec-date">Data:</label></b>
+							<b><label for="rec-date">Date:</label></b>
 							<input id="rec-date" type="date"/>
 						</div>
-						<div><b>Descrizione</b></div>
+						<div><b>Description</b></div>
 						<div><textarea id="rec-description"></textarea></div>
-						<div><b>Note</b></div>
+						<div><b>Notes</b></div>
 						<div><textarea id="rec-notes"></textarea></div>
 						<div>
-							<b><label for="rec-cats">Categoria:</label></b>
+							<b><label for="rec-cats">Category:</label></b>
 							<select id="rec-cats"></select>
 						</div>
 						<div>
-							<b><label for="rec-places">Luogo:</label></b>
+							<b><label for="rec-places">Place:</label></b>
 							<select id="rec-places"></select>
 						</div>
 						<div>
-							<b><label for="rec-date">Importo:</label></b>
+							<b><label for="rec-date">Amount:</label></b>
 							<input id="rec-amount" type="number"/>
 						</div>
-						<div><button id="rec-save-create" type="button">Crea</button></div>
+						<div><button id="rec-save-create" type="button">Create</button></div>
 					</div>
 					<div class="vertical bordered">
-						<div><b>Aggiungi</b></div>
+						<div><b>Add</b></div>
 						<form id="rec-upload">
 							<div><input type="file" name="file" accept=".xls" /></div>
 							<div><button id="rec-upload-ok" type="submit">Ok</button></div>

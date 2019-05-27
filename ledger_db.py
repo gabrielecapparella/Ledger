@@ -49,8 +49,8 @@ class Ledger:
 		query = 'INSERT IGNORE INTO records (date,type,descr,amount,notes,id_category,id_place) VALUES (%s,%s,%s,%s,%s,%s,%s)'
 		with open(file, 'r') as f:
 			records = re.findall(('<tr>'
-				'<td border="1">\d{2}/\d{2}/\d{4}</td>'
-				'<td border="1">(\d{2}/\d{2}/\d{4})</td>'
+				'<td border="1">[0-9]{2}/[0-9]{2}/[0-9]{4}</td>'
+				'<td border="1">([0-9]{2}/[0-9]{2}/[0-9]{4})</td>'
 				'<td border="1">(.*?)</td>'
 				'<td border="1">(.*?)</td>'
 				'<td class="excelCurrency" border="1">&euro; (.*?)</td>'

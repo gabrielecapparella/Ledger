@@ -122,7 +122,7 @@ $(document).ready(function(){
 		$('#set-place-cat').val(p[2]);
 		$('#new-place-pattern').val(p[1]);
 		
-		$('#new-place').html('Modifica');
+		$('#new-place').html('Edit');
 		$('#new-place').unbind("click").click(edit_place);
 	}
 
@@ -135,7 +135,7 @@ $(document).ready(function(){
 		$("#places-clear").unbind("click");
 		
 		$('#new-place').unbind("click").click(create_place);
-		$('#new-place').html('Crea');
+		$('#new-place').html('Create');
 		
 		$("#new-place-name").val("");
 		$('#new-place-pattern').val("");
@@ -191,7 +191,7 @@ $(document).ready(function(){
 		$('#rec-places').val(r[6]);
 		$('#rec-amount').val(r[3]);
 
-		$('#rec-save-create').html('Modifica');
+		$('#rec-save-create').html('Edit');
 		$('#rec-save-create').unbind("click").click(edit_record);
 	}
 
@@ -203,7 +203,7 @@ $(document).ready(function(){
 		$("#recs-del").unbind("click");
 		$("#rec-clear").unbind("click");
 
-		$('#rec-save-create').html('Crea');		
+		$('#rec-save-create').html('Create');		
 		$('#rec-save-create').unbind("click").click(create_record);
 
 		$("#rec-date").val("");
